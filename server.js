@@ -3,6 +3,12 @@ const cors = require("cors");
 const crypto = require("crypto");
 const { Pool } = require("pg");
 
+const {
+  registerJobberWebhook
+} = require("./jobber-webhook");
+
+const app = express();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
