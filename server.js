@@ -7,6 +7,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+
+app.use(
+  "/webhooks/jobber",
+  express.raw({ type: "application/json" })
+);
+
 app.use(express.json());
 
 const pool = new Pool({
