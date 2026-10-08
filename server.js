@@ -3,10 +3,6 @@ const cors = require("cors");
 const crypto = require("crypto");
 const { Pool } = require("pg");
 
-const {
-  registerJobberWebhook
-} = require("./jobber-webhook");
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -26,34 +22,27 @@ const pool = new Pool({
   }
 });
 
-registerJobberWebhook(app, pool);
-
 const JOBBER_API = "https://api.getjobber.com/api/graphql";
 const JOBBER_OAUTH = "https://api.getjobber.com/api/oauth";
 const JOBBER_GRAPHQL_VERSION = "2025-04-16";
 
+async function initializeDatabase() {
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS jobber_oauth_states (
-      state TEXT PRIMARY KEY,
-      code_verifier TEXT NOT NULL,
+    CREATE TABLE IF NOT EXISTS attributions (
+      id SERIAL PRIMARY KEY,
+      visitor_id TEXT,
+      gclid TEXT,
+      utm_source TEXT,
+      utm_medium TEXT,
+      utm_campaign TEXT,
+      utm_term TEXT,
+      utm_content TEXT,
+      landing_page TEXT,
+      referrer TEXT,
+      traffic_source TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS jobber_webhook_events (
-      id SERIAL PRIMARY KEY,
-      topic TEXT,
-      account_id TEXT,
-      item_id TEXT,
-      occurred_at TIMESTAMPTZ,
-      received_at TIMESTAMPTZ DEFAULT NOW(),
-      payload JSONB
-    );
-  `);
-
-  console.log("Database initialized");
-}
 
   const columns = [
     ["visitor_id", "TEXT"],
