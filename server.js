@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
 const { Pool } = require("pg");
+const {
+  registerJobberTest
+} = require("./jobber-connection.js");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -578,87 +581,3 @@ async function getJobberAccessToken() {
 
   return token.access_token;
 }
-
-/*
-|--------------------------------------------------------------------------
-| JOBBER CONNECTION TEST
-|--------------------------------------------------------------------------
-*/
-
-app.get("/jobber/test", async (req, res) => {
-  try {
-    const accessToken =
-      await getJobberAccessToken();
-
-    const response = await fetch(
-      JOBBER_API,
-      {
-        method: "POST",
-        headers: {
-          Authorization:
-            `Bearer ${accessToken}`,
-          "X-JOBBER-GRAPHQL-VERSION":
-            JOBBER_GRAPHQL_VERSION,
-          "Content-Type":
-            "application/json"
-        },
-        body: JSON.stringify({
-          query: `
-            query GetAccount {
-              account {
-                id
-                name
-              }
-            }
-          `
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || data.errors) {
-      console.error(
-        "Jobber API test failed:",
-        data
-      );
-
-      return res.status(500).json({
-        success: false,
-        error: data.errors || data
-      });
-    }
-
-    res.json({
-      success: true,
-      jobber_account: data.data.account
-    });
-  } catch (error) {
-    console.error(
-      "Jobber test error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-initializeDatabase()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(
-        `Server running on port ${PORT}`
-      );
-    });
-  })
-  .catch((error) => {
-    console.error(
-      "Database initialization failed:",
-      error
-    );
-
-    process.exit(1);
-  });
